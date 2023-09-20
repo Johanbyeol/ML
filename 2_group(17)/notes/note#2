@@ -1,0 +1,70 @@
+환경설정
+--------------------------------------------------------
+코드
+    # 파이썬 ≥3.5 필수
+    import sys
+    assert sys.version_info >= (3, 5)
+    
+    # 사이킷런 ≥0.20 필수
+    import sklearn
+    assert sklearn.__version__ >= "0.20"
+    
+    # 공통 모듈 임포트
+    import numpy as np
+    import os
+    
+    # 깔금한 그래프 출력을 위해
+    %matplotlib inline
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    mpl.rc('axes', labelsize=14)
+    mpl.rc('xtick', labelsize=12)
+    mpl.rc('ytick', labelsize=12)
+    
+    # 그림을 저장할 위치
+    PROJECT_ROOT_DIR = "."
+    CHAPTER_ID = "end_to_end_project"
+    IMAGES_PATH = os.path.join(PROJECT_ROOT_DIR, "images", CHAPTER_ID)
+    os.makedirs(IMAGES_PATH, exist_ok=True)
+    
+    def save_fig(fig_id, tight_layout=True, fig_extension="png", resolution=300):
+        path = os.path.join(IMAGES_PATH, fig_id + "." + fig_extension)
+        print("그림 저장:", fig_id)
+        if tight_layout:
+            plt.tight_layout()
+        plt.savefig(path, format=fig_extension, dpi=resolution)
+    ---------------------------------------------------
+    
+필요한 라이브러리들을 import한다.
+사이킷런은 파이썬 환경에서  머신러닝 모듈로 구성되어 있음.
+numpy는 기초 수학 연산 및 행렬계산
+matplot은 그래프를 출력하는 라이브러리인데 rc함수로 x, y 그리고 축의 두께를 정함.
+    
+makedirs 함수로 디렉토리를 생성한다. 현재 디렉토리(PROJECT_ROOT_DIR)에 디렉토리(CHAPTER_ID)를 생성하고 나중에 이미지(images)를 저장하게 된다. 
+    
+fig_id: 저장할 그림파일의 이름
+tight_layout: 그림의 레이아웃을 조절할지 여부를 나타내는 부울 값
+fig_extension: 그림파일의 확장자(기본값”png”)
+resolution: 그림의 해상도(기본값 300)
+    
+.info vs .describe 차이
+.info는 각 Columns의 이름과 수,  null값의 여부, 데이터 타입의 종류를 나타내는 등 데이터 셋의 기본 정보를 보여준다.
+    
+.describe는 각 행의 값을 평균, 최소, 최대, 25%, 50%, 75%로 구분지어 데이터셋을 나타낸다.
+    
+.value_count()는  특정 행의 값을 수치로 나타낸다. 
+    
+스케일링 및 데이터 최적화가 필요 → 데이터 전처리
+    
+테스트셋이 과적합을 피하는 최선의 방법인가?
+-테스트 세트 뿐만 아니라 검증 세트를 이용한다면 과적합을 줄일 수 있을 것이라고 예상함
+-과적합은 주로 데이터가 적은 경우에 많이 발생하므로 더 많은 데이터를 수집하여 예측의 정확성을 더 높이고 분석 결과를 더욱 일반화하기 쉽게 한다
+-교차검증,,
+    
+왜 데이터를 먼저 봐야 하는가?
+-전체적으로 데이터의 흐름을 파악해야 어떤 식으로 분석을 해야 하는지 틀을 잡을 수 있음 
+-데이터 이상 값을 찾아 분석에 영향을 끼치는 요소를 먼저 알 수 있기 때문 
+    
+무작위 샘플링 vs 계층적 샘플링
+-무작위 샘플링 : 무작위 샘플링은 데이터셋을 무작위로 구분한다. 만약, 예측못하는 값들로 구성된 데이터셋이 만들어진 경우엔 일반화가 안되어 편향이 심해질 것 같다. 
+-계층적 샘플링 : 각 계층별 비슷한 데이터를 추출함으로써 전체 데이터를 샘플링하는 것과 비슷한 결과를 가지고 오기에 편향된 값이 나타날 확률이 적을 듯 합니다.
