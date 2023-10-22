@@ -1,0 +1,104 @@
+결정트리
+분류와 회귀 작업, 다중출력 작업이 가능한 머신러닝 알고리즘(랜텀 포레스트의 기본 구성요소)
+
+-트리구성
+Node : 가지치기가 시작되는 지점
+Root node : 맨 상단에 위치한 노드
+Leaf node : 더 이상의 가지치기가 발생하지 않는 노드
+ 
+하이퍼 파라미터 - max_depth : 결정트리 최대 깊이 지정
+
+-시각화 후 결과값
+gini : 해당 노드의 불순도 측정값
+samples : 해당 노드 결정에 사용된 샘플 수
+value : 해당 마디 결정에 사용된 샘플을 클래스 별로 구분한 결과
+class : 각 클래스별 비율을 계산하여 가장 높은 비율에 해당하는 클래스를 선정
+
+클래스 확률 추정 - 한 샘플이 특정 클래스 K에 속할 확률을 추정 
+ 
+CART(Classification and Regression Tree) 알고리즘
+탐욕적 알고리즘 - 현재 노드 단계에서 가장 좋은(불순물이 낮은)것을 선택하는 알고리즘
+비용함수를 최소화하는 특성 k와 해당 특성의 임곗값 tk를 설정
+
+계산 복잡도 = O(log2(m)), 예측속도가 상당히 빠름.
+각 노드에서 모든 특성을 비교하는 경우의 계산 복잡도  = O(n * m * log2(m))
+
+지니 불순도, 엔트로피 - criterion 매개변수를 “entropy”로 지정하여 엔트로피 불순도 사용 가능
+
+엔트로피0은 지니불순도0, 엔트로피1은 지니불순도 0.5→반반분포
+
+-규제 매개변수
+비매개변수 모델
+훈련되기전에파라미터 수가 결정되지 않는 모델 → 과대적합 위험 높음
+매개변수 모델
+미리 정의된 모델 파라미터사용 → 자유도가 제한되고, 과대적합 위험도 줄어듬(과소적합 위험은 커짐)
+
+-회귀
+사이킷런의 DecisionTreeRegressor을 이용한 결정 트리 회귀 모델
+ex) x1 = 0.6인 샘플 타깃을 예측 → value = 0.111인 리프 노드 도달
+    samples - 해당 마디에 속한 훈련 샘플 수
+    value - 해당 마디에 속한 훈련 샘플의 평균 타깃값
+    mse - 해당 마디에 속한 훈련 샘플의 평균제곱오차
+
+회귀용 CART 알고리즘의 비용함수 - 각 노드의 평균제곱오차인 MSE를 최소화하는 방향으로 학습
+
+결정 트리 회귀 모델의 규제
+규제가 없으면 - 과대 적합
+규제(min_samples_leaf 파라미터 값 설정)
+
+결정 트리 장점 - 여러 용도로 사용 가능, 성능이 매우 우수
+결정 트리 단점 - 훈련 세트에 민감하게 반응
+1. 훈련 세트의 회전에 민감(회전 시키는 이유 - 회전을 통해 특징을 드러냄) → 일반화 하기 어려움, PCA 기법으로 해결
+2. 훈련 세트의 작은 변화에 매우 민감 → 하나의 샘플 데이터의 삭제가 결과에 큰 영향을 미침
+
+연습문제 1번
+-make_moons 를 이용해 데이터 생성 및 확인
+----------------------------------------
+from sklearn.datasets import make_moons
+
+X, y= make_moons(n_samples=1000, noise = 0.4)
+
+plt.plot(X[y==1, 0], X[y==1, 1], marker='o',linestyle='',color='red')
+plt.plot(X[y==0, 0], X[y==0, 1], marker='o',linestyle='',color='blue')
+plt.show()
+​----------------------------------------
+
+
+-train_test_split을 이용해 훈련세트, 검증세트 분류 및 각각의 데이터들 확인
+----------------------------------------
+from sklearn.model_selection import train_test_split
+X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size = 0.2, random_state = 42)
+print('X_train =', X_train)
+print('X_valid =', X_valid)
+print('y_train =', y_train)
+print('y_valid =', y_valid)
+​----------------------------------------
+
+-GridSearchCV를 이용해 param_grid 설정 및 훈련
+----------------------------------------
+# GridSearchCV의 parma_grid 설정
+params = {
+    'max_depth' : list(range(2,20)),
+    'min_samples_split' : list(range(2, 10))
+}
+
+grid_tree = GridSearchCV(DecisionTreeClassifier(random_state=42), param_grid=params, cv=3, refit=True)
+grid_tree.fit(X_train, y_train)
+----------------------------------------
+​
+-최적 파라미터 계산 및 검증 점수 
+----------------------------------------
+print('best params : ', grid_tree.best_params_)
+print('best score : ', grid_tree.best_score_)
+em = grid_tree.best_estimator_
+pred = em.predict(X_valid)
+accuracy_score(y_valid, pred)
+----------------------------------------
+​
+-최적화한 파라미터 및 검증 점수
+----------------------------------------
+best params :  {'max_depth': 4, 'min_samples_split': 2}
+best score :  0.8550355288971492
+0.825
+----------------------------------------
+​
